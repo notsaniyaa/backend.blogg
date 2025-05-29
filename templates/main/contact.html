@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Contact - AI Blog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">Contact Us</h1>
+                <p class="lead text-muted">We'd love to hear from you! Get in touch with our team.</p>
+            </div>
+            
+            <div class="row">
+                <!-- Contact Form -->
+                <div class="col-md-8 mb-4">
+                    <div class="card shadow">
+                        <div class="card-body p-4">
+                            <h3 class="mb-4">Send us a Message</h3>
+                            <form id="contactForm">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <select class="form-select" id="subject" required>
+                                        <option value="">Choose a subject...</option>
+                                        <option value="general">General Inquiry</option>
+                                        <option value="technical">Technical Support</option>
+                                        <option value="feature">Feature Request</option>
+                                        <option value="bug">Bug Report</option>
+                                        <option value="partnership">Partnership</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" rows="5" required 
+                                              placeholder="Tell us how we can help you..."></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="col-md-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">Get in Touch</h5>
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-envelope fa-lg text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Email</strong><br>
+                                    <a href="mailto:ramina.tleubai@narxoz.kz" class="text-decoration-none">ramina.tleubai@narxoz.kz</a>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-phone fa-lg text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Phone</strong><br>
+                                    <a href="tel:+1234567890" class="text-decoration-none">+7 776 217 55 06</a>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-map-marker-alt fa-lg text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Address</strong><br>
+                                    Zhandosova, 55<br>
+                                    Almaty, Kazakhstan
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">Follow Us</h5>
+                            <div class="d-flex gap-3">
+                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-facebook"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="card shadow mt-5">
+                <div class="card-body p-4">
+                    <h3 class="mb-4">Frequently Asked Questions</h3>
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse1">
+                                    How does the AI sentiment analysis work?
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our AI uses advanced natural language processing to analyze the emotional tone of your writing. 
+                                    It examines word choice, context, and linguistic patterns to determine whether your content 
+                                    conveys positive, negative, or neutral sentiment.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse2">
+                                    Is the platform free to use?
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! AI Blog is completely free to use. You can create an account, write posts, 
+                                    use AI sentiment analysis, and engage with the community at no cost.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse3">
+                                    Can I export my blog posts?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Currently, you can copy and paste your content from the platform. We're working on 
+                                    adding export functionality in a future update.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse4">
+                                    How can I improve my writing with AI insights?
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Pay attention to the sentiment analysis results and try to understand how your word 
+                                    choices affect the emotional tone. Use our AI chatbot for writing tips and experiment 
+                                    with different approaches to see how they impact sentiment scores.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Simulate form submission
+    const button = this.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = '<i class="fas fa-check me-2"></i>Message Sent!';
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-success');
+        
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+        alert.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            Thank you for your message! We'll get back to you within 24 hours.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        this.appendChild(alert);
+        
+        // Reset form
+        this.reset();
+        
+        // Reset button after 3 seconds
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-primary');
+        }, 3000);
+    }, 2000);
+});
+</script>
+{% endblock %}

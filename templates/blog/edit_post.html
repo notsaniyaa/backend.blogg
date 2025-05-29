@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post - AI Blog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Edit Blog Post</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('blog.edit_post', id=post.id) }}" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            {{ form.title(class="form-control") }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Content</label>
+                            {{ form.content(class="form-control", rows="10") }}
+                            {% if form.content.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.content.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="summary" class="form-label">Summary (Optional)</label>
+                            {{ form.summary(class="form-control", rows="3") }}
+                            <div class="form-text">If left empty, a summary will be automatically generated from your content.</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category_id" class="form-label">Category</label>
+                                {{ form.category_id(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tags" class="form-label">Tags</label>
+                                {{ form.tags(class="form-control") }}
+                                <div class="form-text">Separate tags with commas</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="featured_image" class="form-label">Featured Image</label>
+                            {{ form.featured_image(class="form-control") }}
+                            <div class="form-text">Leave empty to keep current image. Recommended size: 800x600 pixels.</div>
+                            
+                            {% if post.featured_image %}
+                            <div class="mt-2">
+                                <p class="mb-1">Current Image:</p>
+                                <img src="{{ url_for('static', filename='uploads/posts/' + post.featured_image) }}" 
+                                     class="img-thumbnail" width="200" alt="Current featured image">
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-check">
+                            {{ form.published(class="form-check-input") }}
+                            <label class="form-check-label" for="published">Published</label>
+                            <div class="form-text">Uncheck to save as draft</div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-brain me-2"></i>
+                            <strong>AI Sentiment Analysis:</strong> Your post will be re-analyzed for sentiment when you update it.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('blog.view_post', id=post.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

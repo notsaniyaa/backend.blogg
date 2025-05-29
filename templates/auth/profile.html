@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.get_full_name() }}'s Profile - AI Blog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <!-- Profile Image -->
+                    {% if user.profile_image and user.profile_image != 'default.jpg' %}
+                    <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_image) }}" 
+                         class="rounded-circle img-thumbnail mb-3" width="150" height="150" 
+                         alt="{{ user.get_full_name() }}">
+                    {% else %}
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white mx-auto mb-3"
+                         style="width: 150px; height: 150px; font-size: 3rem;">
+                        {{ user.first_name[0] }}{{ user.last_name[0] }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- User Info -->
+                    <h3 class="mb-0">{{ user.get_full_name() }}</h3>
+                    <p class="text-muted mb-2">@{{ user.username }}</p>
+                    
+                    {% if user.bio %}
+                    <p class="mb-3">{{ user.bio }}</p>
+                    {% endif %}
+                    
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-calendar-alt me-1"></i>Joined {{ user.created_at.strftime('%B %Y') }}
+                    </p>
+                    
+                    {% if current_user.id == user.id %}
+                    <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-primary">
+                        <i class="fas fa-user-edit me-2"></i>Edit Profile
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- User Stats -->
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Stats
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="mb-0">{{ stats.total_posts }}</h4>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="mb-0">{{ stats.total_favorites }}</h4>
+                            <small class="text-muted">Favorites</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="mb-0">{{ stats.total_comments }}</h4>
+                            <small class="text-muted">Comments</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Posts -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Recent Posts
+                    </h5>
+                    {% if current_user.id == user.id %}
+                    <a href="{{ url_for('blog.my_posts') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if recent_posts %}
+                    {% for post in recent_posts %}
+                    <div class="mb-3 pb-3 {{ 'border-bottom' if not loop.last }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="mb-1">
+                                <a href="{{ url_for('blog.view_post', id=post.id) }}" class="text-decoration-none">
+                                    {{ post.title }}
+                                </a>
+                            </h5>
+                            {% if post.sentiment_label %}
+                            <span class="badge sentiment-{{ post.sentiment_label }}">
+                                {{ post.get_sentiment_emoji() }} {{ post.sentiment_label.title() }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="mb-1">{{ post.summary or post.content[:150] + '...' }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="small text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ post.created_at.strftime('%B %d, %Y') }}
+                                <i class="fas fa-eye ms-2 me-1"></i>{{ post.views }} views
+                                <i class="fas fa-heart ms-2 me-1"></i>{{ post.get_favorite_count() }} favorites
+                            </div>
+                            
+                            {% if current_user.id == user.id %}
+                            <div>
+                                <a href="{{ url_for('blog.edit_post', id=post.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-edit fa-3x text-muted mb-3"></i>
+                        <h5>No posts yet</h5>
+                        {% if current_user.id == user.id %}
+                        <p class="text-muted">Start sharing your thoughts with the world!</p>
+                        <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary">
+                            <i class="fas fa-pen me-2"></i>Write Your First Post
+                        </a>
+                        {% else %}
+                        <p class="text-muted">This user hasn't published any posts yet.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Favorite Posts -->
+            {% if current_user.id == user.id %}
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>Favorite Posts
+                    </h5>
+                    <a href="{{ url_for('main.favorites') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if favorite_posts %}
+                    <div class="list-group">
+                        {% for post in favorite_posts %}
+                        <a href="{{ url_for('blog.view_post', id=post.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ post.title }}</h6>
+                                {% if post.sentiment_label %}
+                                <span class="badge sentiment-{{ post.sentiment_label }}">
+                                    {{ post.get_sentiment_emoji() }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">
+                                by {{ post.author.get_full_name() }} • {{ post.created_at.strftime('%B %d, %Y') }}
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="far fa-heart fa-3x text-muted mb-3"></i>
+                        <h5>No favorites yet</h5>
+                        <p class="text-muted">Explore posts and favorite the ones you like!</p>
+                        <a href="{{ url_for('blog.all_posts') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Discover Posts
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

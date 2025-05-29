@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}About - AI Blog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Hero Section -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">About AI Blog</h1>
+                <p class="lead text-muted">Revolutionizing blogging with artificial intelligence</p>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="card shadow mb-5">
+                <div class="card-body p-5">
+                    <h2 class="mb-4">Our Mission</h2>
+                    <p class="mb-4">
+                        AI Blog is a cutting-edge platform that combines the power of artificial intelligence with 
+                        traditional blogging to create a more intelligent, engaging, and insightful writing experience. 
+                        Our mission is to help writers understand the emotional impact of their content while providing 
+                        readers with better ways to discover and engage with content that resonates with them.
+                    </p>
+                    
+                    <h3 class="mb-3">What Makes Us Different</h3>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-brain fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>AI Sentiment Analysis</h5>
+                                    <p class="text-muted">Every post is automatically analyzed for emotional tone, helping writers understand how their content might be perceived.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-robot fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Intelligent Chatbot</h5>
+                                    <p class="text-muted">Our AI assistant helps users navigate the platform, understand features, and get writing tips.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-search fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Smart Discovery</h5>
+                                    <p class="text-muted">Advanced search and filtering options help readers find content that matches their interests and mood.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-heart fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Community Features</h5>
+                                    <p class="text-muted">Favorites, comments, and engagement tracking create a vibrant community of writers and readers.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="mb-3">How It Works</h3>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-pen fa-2x text-primary"></i>
+                            </div>
+                            <h5>1. Write</h5>
+                            <p class="text-muted">Create your blog post with our intuitive editor</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-cogs fa-2x text-primary"></i>
+                            </div>
+                            <h5>2. Analyze</h5>
+                            <p class="text-muted">AI automatically analyzes sentiment and provides insights</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-share fa-2x text-primary"></i>
+                            </div>
+                            <h5>3. Share</h5>
+                            <p class="text-muted">Publish and engage with the community</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="mb-3">Technology Stack</h3>
+                    <p class="mb-4">
+                        Built with modern web technologies including Flask, SQLAlchemy, Bootstrap, and advanced 
+                        natural language processing libraries. Our sentiment analysis uses both TextBlob and 
+                        NLTK's VADER sentiment analyzer for accurate emotional tone detection.
+                    </p>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-user-plus me-2"></i>Join Our Community
+                        </a>
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-envelope me-2"></i>Contact Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Section -->
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h3 class="text-center mb-4">Our Vision</h3>
+                    <p class="text-center text-muted mb-4">
+                        We believe that artificial intelligence should enhance human creativity, not replace it. 
+                        Our platform is designed to help writers become more effective communicators while 
+                        preserving the authentic voice that makes each writer unique.
+                    </p>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                            <h5>Innovation</h5>
+                            <p class="text-muted">Pushing the boundaries of what's possible in content creation</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <i class="fas fa-users fa-3x text-success mb-3"></i>
+                            <h5>Community</h5>
+                            <p class="text-muted">Building connections between writers and readers worldwide</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                            <h5>Growth</h5>
+                            <p class="text-muted">Helping writers improve their craft through AI-powered insights</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

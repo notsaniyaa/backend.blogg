@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI-Powered Blog{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 4rem 0;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .sentiment-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .sentiment-positive {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .sentiment-negative {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .sentiment-neutral {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .post-meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .favorite-btn {
+            border: none;
+            background: none;
+            color: #dc3545;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-btn:hover {
+            color: #c82333;
+            transform: scale(1.1);
+        }
+
+        .favorite-btn.favorited {
+            color: #dc3545;
+        }
+
+        .sidebar {
+            background-color: var(--light-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .ai-insights {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .ai-insights h6 {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .ai-insights ul {
+            margin-bottom: 0;
+            padding-left: 1.2rem;
+        }
+
+        .ai-insights li {
+            margin-bottom: 0.3rem;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="fas fa-blog me-2"></i>AI Blog
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('blog.all_posts') }}">All Posts</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('blog.create_post') }}">Write Post</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.favorites') }}">Favorites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.chatbot') }}">AI Chat</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.about') }}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.contact') }}">Contact</a>
+                    </li>
+                </ul>
+
+                <!-- Search Form -->
+                <form class="d-flex me-3" method="GET" action="{{ url_for('main.search') }}">
+                    <input class="form-control me-2" type="search" name="query" placeholder="Search posts..."
+                           value="{{ request.args.get('query', '') }}">
+                    <button class="btn btn-outline-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                           data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>{{ current_user.first_name }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('blog.my_posts') }}">
+                                <i class="fas fa-edit me-2"></i>My Posts
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.edit_profile') }}">
+                                <i class="fas fa-user-edit me-2"></i>Edit Profile
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AI-Powered Blog</h5>
+                    <p>A modern blogging platform with intelligent sentiment analysis and user engagement features.</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('main.about') }}" class="text-light">About</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="text-light">Contact</a></li>
+                        <li><a href="{{ url_for('blog.all_posts') }}" class="text-light">All Posts</a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('main.chatbot') }}" class="text-light">AI Chat</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Features</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-brain me-2"></i>AI Sentiment Analysis</li>
+                        <li><i class="fas fa-heart me-2"></i>Favorite Posts</li>
+                        <li><i class="fas fa-search me-2"></i>Advanced Search</li>
+                        <li><i class="fas fa-robot me-2"></i>AI Chatbot</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>&copy; 2024 AI Blog. Built with Flask and AI integration.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Favorite toggle functionality
+        function toggleFavorite(postId) {
+            $.ajax({
+                url: '/toggle_favorite/' + postId,
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': $('meta[name=csrf-token]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const btn = $('#favorite-btn-' + postId);
+                        const icon = btn.find('i');
+                        const count = $('#favorite-count-' + postId);
+
+                        if (response.is_favorited) {
+                            icon.removeClass('far').addClass('fas');
+                            btn.addClass('favorited');
+                        } else {
+                            icon.removeClass('fas').addClass('far');
+                            btn.removeClass('favorited');
+                        }
+
+                        if (count.length) {
+                            count.text(response.favorite_count);
+                        }
+
+                        // Show toast notification
+                        showToast(response.message, 'success');
+                    }
+                },
+                error: function() {
+                    showToast('An error occurred', 'error');
+                }
+            });
+        }
+
+        // Toast notification function
+        function showToast(message, type) {
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : 'success'} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            // Create toast container if it doesn't exist
+            if (!$('#toast-container').length) {
+                $('body').append('<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>');
+            }
+
+            const $toast = $(toastHtml);
+            $('#toast-container').append($toast);
+
+            const toast = new bootstrap.Toast($toast[0]);
+            toast.show();
+
+            // Remove toast element after it's hidden
+            $toast.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

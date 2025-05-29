@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}My Posts - AI Blog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>My Blog Posts</h1>
+                <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary">
+                    <i class="fas fa-pen me-2"></i>Create New Post
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% if posts.items %}
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Sentiment</th>
+                            <th>Views</th>
+                            <th>Favorites</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in posts.items %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('blog.view_post', id=post.id) }}" class="text-decoration-none fw-bold">
+                                    {{ post.title[:50] + '...' if post.title|length > 50 else post.title }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if post.published %}
+                                <span class="badge bg-success">Published</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Draft</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if post.sentiment_label %}
+                                <span class="badge sentiment-{{ post.sentiment_label }}">
+                                    {{ post.get_sentiment_emoji() }} {{ post.sentiment_label.title() }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ post.views }}</td>
+                            <td>{{ post.get_favorite_count() }}</td>
+                            <td>{{ post.created_at.strftime('%m/%d/%Y') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('blog.view_post', id=post.id) }}" class="btn btn-outline-primary" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('blog.edit_post', id=post.id) }}" class="btn btn-outline-secondary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" title="Delete" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal{{ post.id }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Delete Modal for each post -->
+                                <div class="modal fade" id="deleteModal{{ post.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirm Deletion</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the post "{{ post.title }}"? This action cannot be undone.
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form method="POST" action="{{ url_for('blog.delete_post', id=post.id) }}">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if posts.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('blog.my_posts', page=posts.prev_num) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                </li>
+                {% endif %}
+                
+                {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == posts.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('blog.my_posts', page=page_num) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if posts.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('blog.my_posts', page=posts.next_num) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% else %}
+    <div class="card shadow">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-edit fa-4x text-muted mb-3"></i>
+            <h3>You haven't created any posts yet</h3>
+            <p class="text-muted">Start sharing your thoughts with the world!</p>
+            <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-pen me-2"></i>Create Your First Post
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}My Favorites - AI Blog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h1 class="mb-4">
+                <i class="fas fa-heart me-2"></i>My Favorite Posts
+            </h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% if posts.items %}
+        {% for post in posts.items %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow">
+                {% if post.featured_image %}
+                <img src="{{ url_for('static', filename='uploads/posts/' + post.featured_image) }}" 
+                     class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <button class="favorite-btn favorited" 
+                                id="favorite-btn-{{ post.id }}" onclick="toggleFavorite({{ post.id }})">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    
+                    <p class="card-text">{{ post.summary or post.content[:150] + '...' }}</p>
+                    
+                    <!-- AI Sentiment Badge -->
+                    {% if post.sentiment_label %}
+                    <div class="mb-2">
+                        <span class="badge sentiment-{{ post.sentiment_label }}">
+                            {{ post.get_sentiment_emoji() }} {{ post.sentiment_label.title() }}
+                        </span>
+                        
+                        {% if post.category %}
+                        <span class="badge bg-secondary">{{ post.category.name }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="post-meta mb-3">
+                        <small>
+                            <i class="fas fa-user me-1"></i>{{ post.author.get_full_name() }}
+                            <i class="fas fa-calendar ms-2 me-1"></i>{{ post.created_at.strftime('%B %d, %Y') }}
+                            <i class="fas fa-eye ms-2 me-1"></i>{{ post.views }}
+                        </small>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <a href="{{ url_for('blog.view_post', id=post.id) }}" class="btn btn-primary">
+                            Read More <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Pagination -->
+        <div class="col-12 mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if posts.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.favorites', page=posts.prev_num) }}">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == posts.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.favorites', page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if posts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.favorites', page=posts.next_num) }}">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="far fa-heart fa-3x text-muted mb-3"></i>
+            <h3>No favorite posts yet</h3>
+            <p class="text-muted">Explore posts and favorite the ones you like!</p>
+            <a href="{{ url_for('blog.all_posts') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-search me-2"></i>Discover Posts
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFavorite(postId) {
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}");
+            }
+        }
+    });
+    
+    $.post(`/toggle_favorite/${postId}`)
+        .done(function(data) {
+            if (data.success) {
+                const btn = $(`#favorite-btn-${postId}`);
+                const icon = btn.find('i');
+                
+                if (data.is_favorited) {
+                    btn.addClass('favorited');
+                    icon.removeClass('far').addClass('fas');
+                } else {
+                    btn.removeClass('favorited');
+                    icon.removeClass('fas').addClass('far');
+                    // Remove from favorites page
+                    btn.closest('.col-lg-6').fadeOut();
+                }
+                
+                // Show toast notification
+                showToast(data.message, 'success');
+            }
+        })
+        .fail(function() {
+            showToast('Error updating favorite status', 'error');
+        });
+}
+
+function showToast(message, type) {
+    const toast = $(`
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `);
+    
+    $('#toast-container').append(toast);
+    const bsToast = new bootstrap.Toast(toast[0]);
+    bsToast.show();
+    
+    toast.on('hidden.bs.toast', function() {
+        $(this).remove();
+    });
+}
+</script>
+{% endblock %}
