@@ -76,57 +76,59 @@ def create_app():
         db.session.rollback()
         return render_template('errors/500.html'), 500
 
-    # Create database tables
+    # Create database tables (only if they don't exist)
     with app.app_context():
         try:
-            # Drop and recreate all tables to ensure consistency
-            print("Recreating database tables...")
-            db.drop_all()
+            print("Checking database tables...")
+            # This only creates tables that don't exist - preserves existing data
             db.create_all()
-            print("Database tables created successfully!")
+            print("Database tables verified/created successfully!")
 
-            # Initialize sample data
-            init_sample_data()
+            # Initialize sample data only if database is empty
+            init_sample_data_if_needed()
 
         except Exception as e:
             print(f"Database initialization error: {e}")
-            # Try to create tables without dropping first
-            try:
-                db.create_all()
-                print("Database tables created (without dropping)!")
-            except Exception as e2:
-                print(f"Failed to create tables: {e2}")
 
     return app
 
 
-def init_sample_data():
-    """Initialize the database with sample data"""
+def init_sample_data_if_needed():
+    """Initialize sample data only if database is empty"""
     from models import db, User, Category, BlogPost
 
     try:
-        print("Initializing sample data...")
+        # Check if we already have data
+        user_count = User.query.count()
+        category_count = Category.query.count()
 
-        # Create sample categories
-        categories_data = [
-            ('Technology', 'Posts about technology and programming', '#007bff'),
-            ('Lifestyle', 'Posts about lifestyle and personal experiences', '#28a745'),
-            ('Travel', 'Travel experiences and tips', '#ffc107'),
-            ('Food', 'Recipes and food reviews', '#dc3545'),
-            ('Health', 'Health and wellness tips', '#6f42c1')
-        ]
+        if user_count > 0 and category_count > 0:
+            print("Database already has data - skipping sample data initialization")
+            return
 
-        for name, desc, color in categories_data:
-            try:
-                if not Category.query.filter_by(name=name).first():
+        print("Database is empty - initializing sample data...")
+
+        # Create sample categories only if none exist
+        if category_count == 0:
+            categories_data = [
+                ('Technology', 'Posts about technology and programming', '#007bff'),
+                ('Lifestyle', 'Posts about lifestyle and personal experiences', '#28a745'),
+                ('Travel', 'Travel experiences and tips', '#ffc107'),
+                ('Food', 'Recipes and food reviews', '#dc3545'),
+                ('Health', 'Health and wellness tips', '#6f42c1')
+            ]
+
+            for name, desc, color in categories_data:
+                try:
                     category = Category(name=name, description=desc, color=color)
                     db.session.add(category)
-            except Exception as e:
-                print(f"Error creating category {name}: {e}")
+                    print(f"Created category: {name}")
+                except Exception as e:
+                    print(f"Error creating category {name}: {e}")
 
-        # Create sample user
-        try:
-            if not User.query.filter_by(username='admin').first():
+        # Create admin user only if no users exist
+        if user_count == 0:
+            try:
                 admin_user = User(
                     username='admin',
                     email='admin@example.com',
@@ -136,15 +138,18 @@ def init_sample_data():
                 )
                 admin_user.set_password('admin123')
                 db.session.add(admin_user)
-        except Exception as e:
-            print(f"Error creating admin user: {e}")
+                print("Created admin user (username: admin, password: admin123)")
+            except Exception as e:
+                print(f"Error creating admin user: {e}")
 
-        db.session.commit()
-        print("Sample data initialized successfully!")
+        # Commit only if we added something
+        if user_count == 0 or category_count == 0:
+            db.session.commit()
+            print("Sample data initialized successfully!")
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error initializing sample data: {e}")
+        print(f"Error checking/initializing sample data: {e}")
 
 
 if __name__ == '__main__':
