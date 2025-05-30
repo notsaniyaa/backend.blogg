@@ -169,41 +169,50 @@ def profile(user_id=None):
 @login_required
 def edit_profile():
     """Edit user profile"""
-    form = EditProfileForm()
+    try:
+        form = EditProfileForm()
 
-    if form.validate_on_submit():
-        try:
-            current_user.first_name = form.first_name.data.strip()
-            current_user.last_name = form.last_name.data.strip()
-            current_user.bio = form.bio.data.strip() if form.bio.data else None
+        if form.validate_on_submit():
+            try:
+                # Update basic info
+                current_user.first_name = form.first_name.data.strip()
+                current_user.last_name = form.last_name.data.strip()
+                current_user.email = form.email.data.strip().lower()
+                current_user.bio = form.bio.data.strip() if form.bio.data else None
 
-            # Handle profile image upload
-            if form.profile_image.data:
-                try:
-                    # Delete old image
-                    if current_user.profile_image and current_user.profile_image != 'default.jpg':
-                        FileHandler.delete_picture(current_user.profile_image, 'profiles')
+                # Handle profile image upload
+                if form.profile_image.data:
+                    try:
+                        # Delete old image
+                        if current_user.profile_image and current_user.profile_image != 'default.jpg':
+                            FileHandler.delete_picture(current_user.profile_image, 'profiles')
 
-                    picture_file = FileHandler.save_picture(form.profile_image.data, 'profiles')
-                    if picture_file:
-                        current_user.profile_image = picture_file
-                except Exception as e:
-                    print(f"Image upload error: {e}")
-                    flash('Error uploading image. Profile updated without image.', 'warning')
+                        picture_file = FileHandler.save_picture(form.profile_image.data, 'profiles')
+                        if picture_file:
+                            current_user.profile_image = picture_file
+                    except Exception as e:
+                        print(f"Image upload error: {e}")
+                        flash('Error uploading image. Profile updated without image.', 'warning')
 
-            db.session.commit()
-            flash('Your profile has been updated successfully!', 'success')
-            return redirect(url_for('auth.profile', user_id=current_user.id))
+                db.session.commit()
+                flash('Your profile has been updated successfully!', 'success')
+                return redirect(url_for('auth.profile', user_id=current_user.id))
 
-        except Exception as e:
-            db.session.rollback()
-            print(f"Profile update error: {e}")
-            flash('An error occurred while updating your profile.', 'danger')
+            except Exception as e:
+                db.session.rollback()
+                print(f"Profile update error: {e}")
+                flash('An error occurred while updating your profile.', 'danger')
 
-    elif request.method == 'GET':
-        # Pre-populate form with current user data
-        form.first_name.data = current_user.first_name
-        form.last_name.data = current_user.last_name
-        form.bio.data = current_user.bio
+        elif request.method == 'GET':
+            # Pre-populate form with current user data
+            form.first_name.data = current_user.first_name
+            form.last_name.data = current_user.last_name
+            form.email.data = current_user.email
+            form.bio.data = current_user.bio
 
-    return render_template('auth/edit_profile.html', form=form)
+        return render_template('auth/edit_profile.html', form=form)
+
+    except Exception as e:
+        print(f"Edit profile error: {e}")
+        flash('An error occurred loading the edit profile page.', 'danger')
+        return redirect(url_for('auth.profile'))

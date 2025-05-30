@@ -79,15 +79,23 @@ def create_app():
     # Create database tables
     with app.app_context():
         try:
+            # Drop and recreate all tables to ensure consistency
+            print("Recreating database tables...")
+            db.drop_all()
             db.create_all()
             print("Database tables created successfully!")
 
-            # Initialize sample data if needed
-            from models import User, Category
-            if not User.query.first():
-                init_sample_data()
+            # Initialize sample data
+            init_sample_data()
+
         except Exception as e:
             print(f"Database initialization error: {e}")
+            # Try to create tables without dropping first
+            try:
+                db.create_all()
+                print("Database tables created (without dropping)!")
+            except Exception as e2:
+                print(f"Failed to create tables: {e2}")
 
     return app
 
@@ -95,7 +103,6 @@ def create_app():
 def init_sample_data():
     """Initialize the database with sample data"""
     from models import db, User, Category, BlogPost
-    from ai_sentiment import sentiment_analyzer
 
     try:
         print("Initializing sample data...")
@@ -110,21 +117,27 @@ def init_sample_data():
         ]
 
         for name, desc, color in categories_data:
-            if not Category.query.filter_by(name=name).first():
-                category = Category(name=name, description=desc, color=color)
-                db.session.add(category)
+            try:
+                if not Category.query.filter_by(name=name).first():
+                    category = Category(name=name, description=desc, color=color)
+                    db.session.add(category)
+            except Exception as e:
+                print(f"Error creating category {name}: {e}")
 
         # Create sample user
-        if not User.query.filter_by(username='admin').first():
-            admin_user = User(
-                username='admin',
-                email='admin@example.com',
-                first_name='Admin',
-                last_name='User',
-                bio='Welcome to our AI-powered blog! I\'m here to help you get started.'
-            )
-            admin_user.set_password('admin123')
-            db.session.add(admin_user)
+        try:
+            if not User.query.filter_by(username='admin').first():
+                admin_user = User(
+                    username='admin',
+                    email='admin@example.com',
+                    first_name='Admin',
+                    last_name='User',
+                    bio='Welcome to our AI-powered blog! I\'m here to help you get started.'
+                )
+                admin_user.set_password('admin123')
+                db.session.add(admin_user)
+        except Exception as e:
+            print(f"Error creating admin user: {e}")
 
         db.session.commit()
         print("Sample data initialized successfully!")

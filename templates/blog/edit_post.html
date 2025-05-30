@@ -42,24 +42,52 @@
                             <label for="summary" class="form-label">Summary (Optional)</label>
                             {{ form.summary(class="form-control", rows="3") }}
                             <div class="form-text">If left empty, a summary will be automatically generated from your content.</div>
+                            {% if form.summary.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.summary.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
-                        
+
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="category_id" class="form-label">Category</label>
                                 {{ form.category_id(class="form-control") }}
+                                {% if form.category_id.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.category_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="col-md-6">
                                 <label for="tags" class="form-label">Tags</label>
                                 {{ form.tags(class="form-control") }}
                                 <div class="form-text">Separate tags with commas</div>
+                                {% if form.tags.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.tags.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="featured_image" class="form-label">Featured Image</label>
                             {{ form.featured_image(class="form-control") }}
                             <div class="form-text">Leave empty to keep current image. Recommended size: 800x600 pixels.</div>
+                            {% if form.featured_image.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.featured_image.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                             
                             {% if post.featured_image %}
                             <div class="mt-2">

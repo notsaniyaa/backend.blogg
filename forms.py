@@ -3,6 +3,7 @@ from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Optional
 from models import User, Category
+from flask_login import current_user
 
 
 class RegistrationForm(FlaskForm):
@@ -76,6 +77,10 @@ class EditProfileForm(FlaskForm):
         DataRequired(message='Last name is required'),
         Length(min=2, max=50, message='Last name must be between 2 and 50 characters')
     ])
+    email = StringField('Email', validators=[
+        DataRequired(message='Email is required'),
+        Email(message='Please enter a valid email address')
+    ])
     bio = TextAreaField('Bio', validators=[
         Length(max=500, message='Bio cannot exceed 500 characters')
     ])
@@ -83,6 +88,17 @@ class EditProfileForm(FlaskForm):
         FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')
     ])
     submit = SubmitField('Save Changes')
+
+    def validate_email(self, email):
+        """Check if email already exists (excluding current user)"""
+        try:
+            if current_user.is_authenticated and email.data.strip().lower() != current_user.email.lower():
+                user = User.query.filter_by(email=email.data.strip().lower()).first()
+                if user:
+                    raise ValidationError('Email already registered. Please choose a different one.')
+        except Exception as e:
+            # If there's a database error, let the view handle it
+            pass
 
 
 class BlogPostForm(FlaskForm):
@@ -108,11 +124,17 @@ class BlogPostForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(BlogPostForm, self).__init__(*args, **kwargs)
+        self.load_categories()
+
+    def load_categories(self):
+        """Load categories safely"""
         try:
+            categories = Category.query.all()
             self.category_id.choices = [(0, 'No Category')] + [
-                (cat.id, cat.name) for cat in Category.query.all()
+                (cat.id, cat.name) for cat in categories
             ]
-        except:
+        except Exception as e:
+            print(f"Error loading categories: {e}")
             self.category_id.choices = [(0, 'No Category')]
 
 

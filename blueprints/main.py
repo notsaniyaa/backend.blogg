@@ -121,44 +121,12 @@ def index():
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """User dashboard"""
+    """User dashboard with enhanced error handling"""
     try:
-        # User's recent posts - safe query
+        # Initialize empty data structures
         user_posts = []
-        try:
-            user_posts = BlogPost.query.filter_by(user_id=current_user.id)\
-                                      .order_by(desc(BlogPost.created_at))\
-                                      .limit(5).all()
-        except Exception as e:
-            print(f"Error getting user posts: {e}")
-            user_posts = []
-
-        # User's favorite posts - safe query
         favorite_posts = []
-        try:
-            favorites = Favorite.query.filter_by(user_id=current_user.id).limit(5).all()
-            for fav in favorites:
-                try:
-                    if fav.post and fav.post.published:
-                        favorite_posts.append(fav.post)
-                except:
-                    continue
-        except Exception as e:
-            print(f"Error getting favorite posts: {e}")
-            favorite_posts = []
-
-        # Recent posts from all users - safe query
         recent_posts = []
-        try:
-            recent_posts = BlogPost.query.filter_by(published=True)\
-                                         .filter(BlogPost.user_id != current_user.id)\
-                                         .order_by(desc(BlogPost.created_at))\
-                                         .limit(10).all()
-        except Exception as e:
-            print(f"Error getting recent posts: {e}")
-            recent_posts = []
-
-        # User statistics - safe calculation
         stats = {
             'total_posts': 0,
             'published_posts': 0,
@@ -167,47 +135,98 @@ def dashboard():
             'total_comments': 0
         }
 
-        try:
-            # Count posts safely
-            all_user_posts = BlogPost.query.filter_by(user_id=current_user.id).all()
-            stats['total_posts'] = len(all_user_posts)
-            stats['published_posts'] = len([p for p in all_user_posts if p.published])
-            stats['total_views'] = sum(post.views or 0 for post in all_user_posts)
-        except Exception as e:
-            print(f"Error calculating post stats: {e}")
+        # Check if current_user is properly loaded
+        if not current_user or not current_user.is_authenticated:
+            flash('Please log in to access your dashboard.', 'warning')
+            return redirect(url_for('auth.login'))
 
+        # Get user's posts with basic error handling
         try:
-            # Count favorites safely
-            stats['total_favorites'] = Favorite.query.filter_by(user_id=current_user.id).count()
-        except Exception as e:
-            print(f"Error counting favorites: {e}")
+            user_posts = db.session.query(BlogPost)\
+                                  .filter(BlogPost.user_id == current_user.id)\
+                                  .order_by(BlogPost.created_at.desc())\
+                                  .limit(5).all()
 
-        try:
-            # Count comments safely
-            stats['total_comments'] = Comment.query.filter_by(user_id=current_user.id).count()
+            # Calculate basic stats from user posts
+            if user_posts:
+                stats['total_posts'] = len(user_posts)
+                stats['published_posts'] = sum(1 for p in user_posts if p.published)
+                stats['total_views'] = sum(getattr(p, 'views', 0) or 0 for p in user_posts)
         except Exception as e:
-            print(f"Error counting comments: {e}")
+            print(f"Error getting user posts: {e}")
+            user_posts = []
+
+        # Get recent posts from other users
+        try:
+            recent_posts = db.session.query(BlogPost)\
+                                    .filter(BlogPost.published == True)\
+                                    .filter(BlogPost.user_id != current_user.id)\
+                                    .order_by(BlogPost.created_at.desc())\
+                                    .limit(10).all()
+        except Exception as e:
+            print(f"Error getting recent posts: {e}")
+            recent_posts = []
+
+        # Try to get favorites if table exists
+        try:
+            # Check if Favorite table exists by trying a simple query
+            favorite_count = db.session.query(Favorite)\
+                                      .filter(Favorite.user_id == current_user.id)\
+                                      .count()
+            stats['total_favorites'] = favorite_count
+
+            # Get favorite posts
+            favorites = db.session.query(Favorite)\
+                                 .filter(Favorite.user_id == current_user.id)\
+                                 .limit(5).all()
+
+            for fav in favorites:
+                try:
+                    if hasattr(fav, 'post') and fav.post and getattr(fav.post, 'published', False):
+                        favorite_posts.append(fav.post)
+                except Exception as inner_e:
+                    print(f"Error processing favorite: {inner_e}")
+                    continue
+
+        except Exception as e:
+            print(f"Favorites table might not exist or has issues: {e}")
+            stats['total_favorites'] = 0
+            favorite_posts = []
+
+        # Try to get comments count if table exists
+        try:
+            comment_count = db.session.query(Comment)\
+                                     .filter(Comment.user_id == current_user.id)\
+                                     .count()
+            stats['total_comments'] = comment_count
+        except Exception as e:
+            print(f"Comments table might not exist: {e}")
+            stats['total_comments'] = 0
 
         return render_template('main/dashboard.html',
                              user_posts=user_posts,
                              favorite_posts=favorite_posts,
                              recent_posts=recent_posts,
                              stats=stats)
+
     except Exception as e:
-        print(f"Dashboard error: {e}")
-        flash('An error occurred loading your dashboard.', 'danger')
-        # Return minimal dashboard
+        print(f"Critical dashboard error: {e}")
+        db.session.rollback()
+
+        # Return absolute minimal dashboard
+        minimal_stats = {
+            'total_posts': 0,
+            'published_posts': 0,
+            'total_views': 0,
+            'total_favorites': 0,
+            'total_comments': 0
+        }
+
         return render_template('main/dashboard.html',
                              user_posts=[],
                              favorite_posts=[],
                              recent_posts=[],
-                             stats={
-                                 'total_posts': 0,
-                                 'published_posts': 0,
-                                 'total_views': 0,
-                                 'total_favorites': 0,
-                                 'total_comments': 0
-                             })
+                             stats=minimal_stats)
 
 @main_bp.route('/search')
 def search():
